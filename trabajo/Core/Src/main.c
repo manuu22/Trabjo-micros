@@ -43,6 +43,8 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
+I2S_HandleTypeDef hi2s2;
+
 TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
@@ -60,6 +62,12 @@ uint8_t Distance  = 0;
 uint32_t tiempo=0;
 char distancia=0;
 uint16_t ADC_val;
+
+//MICROFONO
+int ja =0;
+int vol= 0;
+int alarma_MIC=0;
+volatile int alarma;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,6 +76,7 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2S2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -121,14 +130,75 @@ void sensor_distancia(){
 		 	    //  lcd_clear();
 
 		 	      if (Distance < 18){
-		 	    	  HAL_GPIO_WritePin (GPIOD,GPIO_PIN_12,1);
+		 	    	 // HAL_GPIO_WritePin (GPIOD,GPIO_PIN_12,1);
+		 	    	  alarma =1;
 
 		 	      }
-		 	      else {
-		 	    	  HAL_GPIO_WritePin (GPIOD,GPIO_PIN_12,0);
-		 	     }
+
 
 	  }
+void microfono(){
+	int n = 50;
+	int binary[1600],temp[1600];
+	int buf[1600];
+	int sum = 0;
+	int son = 0;
+	uint16_t sound_in[3000];
+
+	  HAL_I2S_Receive(&hi2s2,sound_in, n, 1000);
+
+	  for (int i = 0; i < n; i++) {
+		for (int j = 0; j < 16; j++) {
+			binary[j] = sound_in[i] % 2;
+			sound_in[i] = sound_in[i]/2;
+		}
+
+		//reverse
+		for (int j = 0; j < 16; j++) {
+			temp[i * 16 + j] = binary[15 - j];
+		}
+	  }
+
+	for (int i = 7; i + 8 < n*16; i++) {
+		sum = 0;
+		for (int j = -7; j <= 8; j++)
+			sum += temp[i + j];
+		if(sum - 8 < 0)  buf[i] = -(sum-8);
+		else buf[i] = sum-8;
+	}
+
+	vol =0;
+	for (int i = 14; i + 16 < n*16; i++) {
+		for (int j = -7; j <= 8; j++)
+			vol += buf[i + j];
+	}
+
+	ja  = 0;
+	son = 0;
+	while (vol > 500){
+		ja  +=1;
+		son +=1;
+		vol -= 500;
+	}
+	if (son>60){
+		alarma_MIC += 1;
+		if (alarma_MIC>1){
+			alarma =1;
+		}
+	}
+
+}
+
+void ldr(){
+	  HAL_ADC_Start(&hadc1);
+	  HAL_ADC_PollForConversion(&hadc1, 100);
+	  ADC_val = HAL_ADC_GetValue(&hadc1);
+
+
+	  if(ADC_val>300){
+		  alarma =1;
+	  }
+}
 
 
 /* USER CODE END 0 */
@@ -164,12 +234,14 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM1_Init();
   MX_ADC1_Init();
+  MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start(&htim1);
 
   HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_RESET);  // pull the TRIG pin low
   lcd_init();
   tiempo=HAL_GetTick();
+
 
   /* USER CODE END 2 */
 
@@ -182,13 +254,11 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  sensor_distancia();
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, 100);
-	  ADC_val = HAL_ADC_GetValue(&hadc1);
+	  microfono();
+	  ldr();
 
-
-	  if(ADC_val>300){
-		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+	  if ((alarma == 1)){
+		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
 	  }
   }
   /* USER CODE END 3 */
@@ -326,6 +396,40 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief I2S2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2S2_Init(void)
+{
+
+  /* USER CODE BEGIN I2S2_Init 0 */
+
+  /* USER CODE END I2S2_Init 0 */
+
+  /* USER CODE BEGIN I2S2_Init 1 */
+
+  /* USER CODE END I2S2_Init 1 */
+  hi2s2.Instance = SPI2;
+  hi2s2.Init.Mode = I2S_MODE_MASTER_RX;
+  hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
+  hi2s2.Init.DataFormat = I2S_DATAFORMAT_16B;
+  hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
+  hi2s2.Init.AudioFreq = I2S_AUDIOFREQ_48K;
+  hi2s2.Init.CPOL = I2S_CPOL_LOW;
+  hi2s2.Init.ClockSource = I2S_CLOCK_PLL;
+  hi2s2.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2S2_Init 2 */
+
+  /* USER CODE END I2S2_Init 2 */
+
+}
+
+/**
   * @brief TIM1 Initialization Function
   * @param None
   * @retval None
@@ -382,9 +486,10 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
