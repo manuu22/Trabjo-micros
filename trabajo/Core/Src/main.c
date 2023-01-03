@@ -64,6 +64,7 @@ uint32_t tiempo=0;
 char distancia=0;
 uint16_t ADC_val;
 volatile int8_t flag=1;
+volatile int8_t sw=0;
 
 //MICROFONO
 int ja =0;
@@ -94,6 +95,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	}
 }
+
 
 void sensor_distancia(){
 				uint16_t dist=0;
@@ -266,17 +268,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  sensor_distancia();
-	  microfono();
 
-	  if(flag>0){ // se enciended si es de noche==1
-	  ldr();
+	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)){
+	   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
+	   sensor_distancia();
+	   microfono();
+
+		 	  if(flag>0){ // se enciended si es de noche==1
+		 	  ldr();
+
+		 	  }
+
+		 	  if ((alarma == 1)){
+		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+
+		 	  }
+	  }
+	  else {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
 	  }
 
-	  if ((alarma == 1)){
-		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
-	  }
+
   }
   /* USER CODE END 3 */
 }
@@ -554,20 +567,20 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_14, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  /*Configure GPIO pins : PA2 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  /*Configure GPIO pins : PA3 PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
