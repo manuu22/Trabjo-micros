@@ -132,6 +132,18 @@ void sensor_distancia(){
 
 
 		 	    	 }
+		 	    	 if(Distance>=20 &&  Distance<30){
+
+		 	    				 	           dist=Distance-20;
+		 	    				 	           lcd_put_cur(0,0);
+		 	    				 	           lcd_send_data(50);
+		 	    				 	           lcd_put_cur(0,1);
+		 	    				 	           lcd_send_data(dist+48);
+		 	    				 	           HAL_Delay(500);
+		 	    				 	           lcd_clear();
+
+
+		 	    			 	    	 }
 		 	    	 else{
 
 		 	    		 lcd_send_data(distancia);
@@ -270,7 +282,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)){
-	   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+
 
 	   sensor_distancia();
 	   microfono();
@@ -287,6 +301,7 @@ int main(void)
 	  }
 	  else {
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+
 	  }
 
 
