@@ -39,6 +39,10 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+I2S_HandleTypeDef hi2s3;
+
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -53,13 +57,18 @@ static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_I2S3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int i;
+uint8_t b = 0;
 volatile int16_t señal=0;
+volatile int16_t señal2=0;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){//detectamos presencia
 	if (GPIO_Pin==GPIO_PIN_0)
@@ -67,6 +76,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){//detectamos presencia
 		señal=0;
 		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_14,0);
 		HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15,1);
+		__HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
 		 HAL_TIM_Base_Start_IT(&htim2);
 
 
@@ -87,12 +97,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)//acaba el temporizad
 	 	HAL_TIM_Base_Stop_IT(&htim2);
 	 	 HAL_TIM_Base_Start_IT(&htim3);
 	 	señal=1;
+
   }
   if(htim->Instance==TIM3)
     {
 	  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15,1);
   	 	HAL_TIM_Base_Stop_IT(&htim3);
   	 	señal=0;
+
     }
 }
 /* USER CODE END 0 */
@@ -104,6 +116,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)//acaba el temporizad
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	uint8_t setup[2];
+	uint8_t pitido[2];//los cuatro primeros son la frecuencia y los cuatro siguentes es el tiempo de duración
+	uint16_t out[1];
 
   /* USER CODE END 1 */
 
@@ -128,8 +143,52 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   MX_TIM3_Init();
+  MX_I2C1_Init();
+  MX_I2S3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
+
+    //Write 0x99 to register 0x00.
+    setup[0]=0x00;
+    setup[1]=0x99;
+    HAL_I2C_Master_Transmit(&hi2c1,0x94,setup,2,100);
+    //Write 0x80 to register 0x47.
+    setup[0] = 0x47;
+    setup[1] = 0x80;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    //Write ‘1’b to bit 7 in register 0x32.
+    setup[0] = 0x32;
+    setup[1] = 0x80;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    //Write ‘0’b to bit 7 in register 0x32.
+    setup[0] = 0x32;
+    setup[1] = 0x00;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    //Write 0x00 to register 0x00.
+    setup[0]=0x00;
+    setup[1]=0x00;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    // activar el power
+    setup[0] = 0x02;
+    setup[1] = 0x9E;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    pitido[0] = 0x1C;
+    pitido[1] = 0x2F;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, pitido, 2, 100);
+    //Beep & Tone config
+    setup[0] = 0x1E;
+    setup[1] = 0xE0;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+    //configuracion volumnen
+     setup[0] = 0x1d;
+    setup[1] = 0x06;
+    HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
+
+  	out[0] = 100;
+
  //HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
@@ -150,8 +209,12 @@ int main(void)
 
 			  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);//tiempo para cerrar la ventana
 			  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 116); //cerramos ventana
+			  señal2=1;
 
 	  	  }
+	  if (señal2){
+		  for (i=0;i<10;i++) { HAL_I2S_Transmit (&hi2s3, out ,1, 10 );}
+	  }
 
 
   }
@@ -205,6 +268,74 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief I2S3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2S3_Init(void)
+{
+
+  /* USER CODE BEGIN I2S3_Init 0 */
+
+  /* USER CODE END I2S3_Init 0 */
+
+  /* USER CODE BEGIN I2S3_Init 1 */
+
+  /* USER CODE END I2S3_Init 1 */
+  hi2s3.Instance = SPI3;
+  hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
+  hi2s3.Init.Standard = I2S_STANDARD_MSB;
+  hi2s3.Init.DataFormat = I2S_DATAFORMAT_16B;
+  hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
+  hi2s3.Init.AudioFreq = I2S_AUDIOFREQ_44K;
+  hi2s3.Init.CPOL = I2S_CPOL_LOW;
+  hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
+  hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+  if (HAL_I2S_Init(&hi2s3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2S3_Init 2 */
+
+  /* USER CODE END I2S3_Init 2 */
+
+}
+
+/**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
@@ -223,9 +354,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 50000;
+  htim2.Init.Prescaler = 16000;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10000;
+  htim2.Init.Period = 5000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -268,9 +399,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 50000;
+  htim3.Init.Prescaler = 16000;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 4000;
+  htim3.Init.Period = 2000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -314,7 +445,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 2000;
+  htim4.Init.Prescaler = 160;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 2000;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -367,9 +498,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13|GPIO_PIN_14|LD6_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13|GPIO_PIN_14|LD6_Pin|GPIO_PIN_4, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
@@ -377,8 +509,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD13 PD14 LD6_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|LD6_Pin;
+  /*Configure GPIO pins : PD13 PD14 LD6_Pin PD4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|LD6_Pin|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
