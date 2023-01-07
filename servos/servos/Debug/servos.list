@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  00015faa  00000000  00000000  00032498  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00010c71  00000000  00000000  00048442  2**0
+ 17 .debug_line   00010c73  00000000  00000000  00048442  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008bed6  00000000  00000000  000590b3  2**0
+ 18 .debug_str    0008bed6  00000000  00000000  000590b5  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000e4f89  2**0
+ 19 .comment      00000050  00000000  00000000  000e4f8b  2**0
                   CONTENTS, READONLY
  20 .debug_frame  00003c60  00000000  00000000  000e4fdc  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -518,160 +518,162 @@ int main(void)
   MX_I2S3_Init();
  80005ce:	f000 f95d 	bl	800088c <MX_I2S3_Init>
   /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
- 80005d2:	2100      	movs	r1, #0
- 80005d4:	485b      	ldr	r0, [pc, #364]	; (8000744 <main+0x198>)
- 80005d6:	f003 f98d 	bl	80038f4 <HAL_TIM_PWM_Start>
+
 
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
- 80005da:	2200      	movs	r2, #0
- 80005dc:	2110      	movs	r1, #16
- 80005de:	485a      	ldr	r0, [pc, #360]	; (8000748 <main+0x19c>)
- 80005e0:	f001 f832 	bl	8001648 <HAL_GPIO_WritePin>
+ 80005d2:	2200      	movs	r2, #0
+ 80005d4:	2110      	movs	r1, #16
+ 80005d6:	485b      	ldr	r0, [pc, #364]	; (8000744 <main+0x198>)
+ 80005d8:	f001 f836 	bl	8001648 <HAL_GPIO_WritePin>
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
- 80005e4:	2201      	movs	r2, #1
- 80005e6:	2110      	movs	r1, #16
- 80005e8:	4857      	ldr	r0, [pc, #348]	; (8000748 <main+0x19c>)
- 80005ea:	f001 f82d 	bl	8001648 <HAL_GPIO_WritePin>
+ 80005dc:	2201      	movs	r2, #1
+ 80005de:	2110      	movs	r1, #16
+ 80005e0:	4858      	ldr	r0, [pc, #352]	; (8000744 <main+0x198>)
+ 80005e2:	f001 f831 	bl	8001648 <HAL_GPIO_WritePin>
 
     //Write 0x99 to register 0x00.
     setup[0]=0x00;
- 80005ee:	2300      	movs	r3, #0
- 80005f0:	733b      	strb	r3, [r7, #12]
+ 80005e6:	2300      	movs	r3, #0
+ 80005e8:	733b      	strb	r3, [r7, #12]
     setup[1]=0x99;
- 80005f2:	2399      	movs	r3, #153	; 0x99
- 80005f4:	737b      	strb	r3, [r7, #13]
+ 80005ea:	2399      	movs	r3, #153	; 0x99
+ 80005ec:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1,0x94,setup,2,100);
- 80005f6:	f107 020c 	add.w	r2, r7, #12
- 80005fa:	2364      	movs	r3, #100	; 0x64
- 80005fc:	9300      	str	r3, [sp, #0]
- 80005fe:	2302      	movs	r3, #2
- 8000600:	2194      	movs	r1, #148	; 0x94
- 8000602:	4852      	ldr	r0, [pc, #328]	; (800074c <main+0x1a0>)
- 8000604:	f001 f996 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 80005ee:	f107 020c 	add.w	r2, r7, #12
+ 80005f2:	2364      	movs	r3, #100	; 0x64
+ 80005f4:	9300      	str	r3, [sp, #0]
+ 80005f6:	2302      	movs	r3, #2
+ 80005f8:	2194      	movs	r1, #148	; 0x94
+ 80005fa:	4853      	ldr	r0, [pc, #332]	; (8000748 <main+0x19c>)
+ 80005fc:	f001 f99a 	bl	8001934 <HAL_I2C_Master_Transmit>
     //Write 0x80 to register 0x47.
     setup[0] = 0x47;
- 8000608:	2347      	movs	r3, #71	; 0x47
- 800060a:	733b      	strb	r3, [r7, #12]
+ 8000600:	2347      	movs	r3, #71	; 0x47
+ 8000602:	733b      	strb	r3, [r7, #12]
     setup[1] = 0x80;
- 800060c:	2380      	movs	r3, #128	; 0x80
- 800060e:	737b      	strb	r3, [r7, #13]
+ 8000604:	2380      	movs	r3, #128	; 0x80
+ 8000606:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 8000610:	f107 020c 	add.w	r2, r7, #12
- 8000614:	2364      	movs	r3, #100	; 0x64
- 8000616:	9300      	str	r3, [sp, #0]
- 8000618:	2302      	movs	r3, #2
- 800061a:	2194      	movs	r1, #148	; 0x94
- 800061c:	484b      	ldr	r0, [pc, #300]	; (800074c <main+0x1a0>)
- 800061e:	f001 f989 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 8000608:	f107 020c 	add.w	r2, r7, #12
+ 800060c:	2364      	movs	r3, #100	; 0x64
+ 800060e:	9300      	str	r3, [sp, #0]
+ 8000610:	2302      	movs	r3, #2
+ 8000612:	2194      	movs	r1, #148	; 0x94
+ 8000614:	484c      	ldr	r0, [pc, #304]	; (8000748 <main+0x19c>)
+ 8000616:	f001 f98d 	bl	8001934 <HAL_I2C_Master_Transmit>
     //Write ‘1’b to bit 7 in register 0x32.
     setup[0] = 0x32;
- 8000622:	2332      	movs	r3, #50	; 0x32
- 8000624:	733b      	strb	r3, [r7, #12]
+ 800061a:	2332      	movs	r3, #50	; 0x32
+ 800061c:	733b      	strb	r3, [r7, #12]
     setup[1] = 0x80;
- 8000626:	2380      	movs	r3, #128	; 0x80
- 8000628:	737b      	strb	r3, [r7, #13]
+ 800061e:	2380      	movs	r3, #128	; 0x80
+ 8000620:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 800062a:	f107 020c 	add.w	r2, r7, #12
- 800062e:	2364      	movs	r3, #100	; 0x64
- 8000630:	9300      	str	r3, [sp, #0]
- 8000632:	2302      	movs	r3, #2
- 8000634:	2194      	movs	r1, #148	; 0x94
- 8000636:	4845      	ldr	r0, [pc, #276]	; (800074c <main+0x1a0>)
- 8000638:	f001 f97c 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 8000622:	f107 020c 	add.w	r2, r7, #12
+ 8000626:	2364      	movs	r3, #100	; 0x64
+ 8000628:	9300      	str	r3, [sp, #0]
+ 800062a:	2302      	movs	r3, #2
+ 800062c:	2194      	movs	r1, #148	; 0x94
+ 800062e:	4846      	ldr	r0, [pc, #280]	; (8000748 <main+0x19c>)
+ 8000630:	f001 f980 	bl	8001934 <HAL_I2C_Master_Transmit>
     //Write ‘0’b to bit 7 in register 0x32.
     setup[0] = 0x32;
- 800063c:	2332      	movs	r3, #50	; 0x32
- 800063e:	733b      	strb	r3, [r7, #12]
+ 8000634:	2332      	movs	r3, #50	; 0x32
+ 8000636:	733b      	strb	r3, [r7, #12]
     setup[1] = 0x00;
- 8000640:	2300      	movs	r3, #0
- 8000642:	737b      	strb	r3, [r7, #13]
+ 8000638:	2300      	movs	r3, #0
+ 800063a:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 8000644:	f107 020c 	add.w	r2, r7, #12
- 8000648:	2364      	movs	r3, #100	; 0x64
- 800064a:	9300      	str	r3, [sp, #0]
- 800064c:	2302      	movs	r3, #2
- 800064e:	2194      	movs	r1, #148	; 0x94
- 8000650:	483e      	ldr	r0, [pc, #248]	; (800074c <main+0x1a0>)
- 8000652:	f001 f96f 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 800063c:	f107 020c 	add.w	r2, r7, #12
+ 8000640:	2364      	movs	r3, #100	; 0x64
+ 8000642:	9300      	str	r3, [sp, #0]
+ 8000644:	2302      	movs	r3, #2
+ 8000646:	2194      	movs	r1, #148	; 0x94
+ 8000648:	483f      	ldr	r0, [pc, #252]	; (8000748 <main+0x19c>)
+ 800064a:	f001 f973 	bl	8001934 <HAL_I2C_Master_Transmit>
     //Write 0x00 to register 0x00.
     setup[0]=0x00;
- 8000656:	2300      	movs	r3, #0
- 8000658:	733b      	strb	r3, [r7, #12]
+ 800064e:	2300      	movs	r3, #0
+ 8000650:	733b      	strb	r3, [r7, #12]
     setup[1]=0x00;
- 800065a:	2300      	movs	r3, #0
- 800065c:	737b      	strb	r3, [r7, #13]
+ 8000652:	2300      	movs	r3, #0
+ 8000654:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 800065e:	f107 020c 	add.w	r2, r7, #12
- 8000662:	2364      	movs	r3, #100	; 0x64
- 8000664:	9300      	str	r3, [sp, #0]
- 8000666:	2302      	movs	r3, #2
- 8000668:	2194      	movs	r1, #148	; 0x94
- 800066a:	4838      	ldr	r0, [pc, #224]	; (800074c <main+0x1a0>)
- 800066c:	f001 f962 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 8000656:	f107 020c 	add.w	r2, r7, #12
+ 800065a:	2364      	movs	r3, #100	; 0x64
+ 800065c:	9300      	str	r3, [sp, #0]
+ 800065e:	2302      	movs	r3, #2
+ 8000660:	2194      	movs	r1, #148	; 0x94
+ 8000662:	4839      	ldr	r0, [pc, #228]	; (8000748 <main+0x19c>)
+ 8000664:	f001 f966 	bl	8001934 <HAL_I2C_Master_Transmit>
     // activar el power
     setup[0] = 0x02;
- 8000670:	2302      	movs	r3, #2
- 8000672:	733b      	strb	r3, [r7, #12]
+ 8000668:	2302      	movs	r3, #2
+ 800066a:	733b      	strb	r3, [r7, #12]
     setup[1] = 0x9E;
- 8000674:	239e      	movs	r3, #158	; 0x9e
- 8000676:	737b      	strb	r3, [r7, #13]
+ 800066c:	239e      	movs	r3, #158	; 0x9e
+ 800066e:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 8000678:	f107 020c 	add.w	r2, r7, #12
- 800067c:	2364      	movs	r3, #100	; 0x64
- 800067e:	9300      	str	r3, [sp, #0]
- 8000680:	2302      	movs	r3, #2
- 8000682:	2194      	movs	r1, #148	; 0x94
- 8000684:	4831      	ldr	r0, [pc, #196]	; (800074c <main+0x1a0>)
- 8000686:	f001 f955 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 8000670:	f107 020c 	add.w	r2, r7, #12
+ 8000674:	2364      	movs	r3, #100	; 0x64
+ 8000676:	9300      	str	r3, [sp, #0]
+ 8000678:	2302      	movs	r3, #2
+ 800067a:	2194      	movs	r1, #148	; 0x94
+ 800067c:	4832      	ldr	r0, [pc, #200]	; (8000748 <main+0x19c>)
+ 800067e:	f001 f959 	bl	8001934 <HAL_I2C_Master_Transmit>
     pitido[0] = 0x1C;
- 800068a:	231c      	movs	r3, #28
- 800068c:	723b      	strb	r3, [r7, #8]
+ 8000682:	231c      	movs	r3, #28
+ 8000684:	723b      	strb	r3, [r7, #8]
     pitido[1] = 0x2F;
- 800068e:	232f      	movs	r3, #47	; 0x2f
- 8000690:	727b      	strb	r3, [r7, #9]
+ 8000686:	232f      	movs	r3, #47	; 0x2f
+ 8000688:	727b      	strb	r3, [r7, #9]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, pitido, 2, 100);
- 8000692:	f107 0208 	add.w	r2, r7, #8
- 8000696:	2364      	movs	r3, #100	; 0x64
- 8000698:	9300      	str	r3, [sp, #0]
- 800069a:	2302      	movs	r3, #2
- 800069c:	2194      	movs	r1, #148	; 0x94
- 800069e:	482b      	ldr	r0, [pc, #172]	; (800074c <main+0x1a0>)
- 80006a0:	f001 f948 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 800068a:	f107 0208 	add.w	r2, r7, #8
+ 800068e:	2364      	movs	r3, #100	; 0x64
+ 8000690:	9300      	str	r3, [sp, #0]
+ 8000692:	2302      	movs	r3, #2
+ 8000694:	2194      	movs	r1, #148	; 0x94
+ 8000696:	482c      	ldr	r0, [pc, #176]	; (8000748 <main+0x19c>)
+ 8000698:	f001 f94c 	bl	8001934 <HAL_I2C_Master_Transmit>
     //Beep & Tone config
     setup[0] = 0x1E;
- 80006a4:	231e      	movs	r3, #30
- 80006a6:	733b      	strb	r3, [r7, #12]
+ 800069c:	231e      	movs	r3, #30
+ 800069e:	733b      	strb	r3, [r7, #12]
     setup[1] = 0xE0;
- 80006a8:	23e0      	movs	r3, #224	; 0xe0
- 80006aa:	737b      	strb	r3, [r7, #13]
+ 80006a0:	23e0      	movs	r3, #224	; 0xe0
+ 80006a2:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 80006ac:	f107 020c 	add.w	r2, r7, #12
- 80006b0:	2364      	movs	r3, #100	; 0x64
- 80006b2:	9300      	str	r3, [sp, #0]
- 80006b4:	2302      	movs	r3, #2
- 80006b6:	2194      	movs	r1, #148	; 0x94
- 80006b8:	4824      	ldr	r0, [pc, #144]	; (800074c <main+0x1a0>)
- 80006ba:	f001 f93b 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 80006a4:	f107 020c 	add.w	r2, r7, #12
+ 80006a8:	2364      	movs	r3, #100	; 0x64
+ 80006aa:	9300      	str	r3, [sp, #0]
+ 80006ac:	2302      	movs	r3, #2
+ 80006ae:	2194      	movs	r1, #148	; 0x94
+ 80006b0:	4825      	ldr	r0, [pc, #148]	; (8000748 <main+0x19c>)
+ 80006b2:	f001 f93f 	bl	8001934 <HAL_I2C_Master_Transmit>
     //configuracion volumnen
      setup[0] = 0x1d;
- 80006be:	231d      	movs	r3, #29
- 80006c0:	733b      	strb	r3, [r7, #12]
+ 80006b6:	231d      	movs	r3, #29
+ 80006b8:	733b      	strb	r3, [r7, #12]
     setup[1] = 0x06;
- 80006c2:	2306      	movs	r3, #6
- 80006c4:	737b      	strb	r3, [r7, #13]
+ 80006ba:	2306      	movs	r3, #6
+ 80006bc:	737b      	strb	r3, [r7, #13]
     HAL_I2C_Master_Transmit(&hi2c1, 0x94, setup, 2, 100);
- 80006c6:	f107 020c 	add.w	r2, r7, #12
- 80006ca:	2364      	movs	r3, #100	; 0x64
- 80006cc:	9300      	str	r3, [sp, #0]
- 80006ce:	2302      	movs	r3, #2
- 80006d0:	2194      	movs	r1, #148	; 0x94
- 80006d2:	481e      	ldr	r0, [pc, #120]	; (800074c <main+0x1a0>)
- 80006d4:	f001 f92e 	bl	8001934 <HAL_I2C_Master_Transmit>
+ 80006be:	f107 020c 	add.w	r2, r7, #12
+ 80006c2:	2364      	movs	r3, #100	; 0x64
+ 80006c4:	9300      	str	r3, [sp, #0]
+ 80006c6:	2302      	movs	r3, #2
+ 80006c8:	2194      	movs	r1, #148	; 0x94
+ 80006ca:	481f      	ldr	r0, [pc, #124]	; (8000748 <main+0x19c>)
+ 80006cc:	f001 f932 	bl	8001934 <HAL_I2C_Master_Transmit>
 
   	out[0] = 100;
- 80006d8:	2364      	movs	r3, #100	; 0x64
- 80006da:	80bb      	strh	r3, [r7, #4]
+ 80006d0:	2364      	movs	r3, #100	; 0x64
+ 80006d2:	80bb      	strh	r3, [r7, #4]
+
+  	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+ 80006d4:	2100      	movs	r1, #0
+ 80006d6:	481d      	ldr	r0, [pc, #116]	; (800074c <main+0x1a0>)
+ 80006d8:	f003 f90c 	bl	80038f4 <HAL_TIM_PWM_Start>
   {
     /* USER CODE END WHILE */
 
@@ -685,7 +687,7 @@ int main(void)
  80006e4:	d105      	bne.n	80006f2 <main+0x146>
 	  	 {
 		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 2000);//podemos mover la ventana como queramos con la mano
- 80006e6:	4b17      	ldr	r3, [pc, #92]	; (8000744 <main+0x198>)
+ 80006e6:	4b19      	ldr	r3, [pc, #100]	; (800074c <main+0x1a0>)
  80006e8:	681b      	ldr	r3, [r3, #0]
  80006ea:	f44f 62fa 	mov.w	r2, #2000	; 0x7d0
  80006ee:	635a      	str	r2, [r3, #52]	; 0x34
@@ -701,10 +703,10 @@ int main(void)
 
 			  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);//tiempo para cerrar la ventana
  80006fc:	2100      	movs	r1, #0
- 80006fe:	4811      	ldr	r0, [pc, #68]	; (8000744 <main+0x198>)
+ 80006fe:	4813      	ldr	r0, [pc, #76]	; (800074c <main+0x1a0>)
  8000700:	f003 f8f8 	bl	80038f4 <HAL_TIM_PWM_Start>
 			  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 116); //cerramos ventana
- 8000704:	4b0f      	ldr	r3, [pc, #60]	; (8000744 <main+0x198>)
+ 8000704:	4b11      	ldr	r3, [pc, #68]	; (800074c <main+0x1a0>)
  8000706:	681b      	ldr	r3, [r3, #0]
  8000708:	2274      	movs	r2, #116	; 0x74
  800070a:	635a      	str	r2, [r3, #52]	; 0x34
@@ -720,7 +722,7 @@ int main(void)
  8000716:	b21b      	sxth	r3, r3
  8000718:	2b00      	cmp	r3, #0
  800071a:	d0df      	beq.n	80006dc <main+0x130>
-		  for (i=0;i<10;i++) { HAL_I2S_Transmit (&hi2s3, out ,1, 10 );}
+		  for (i=0;i<1;i++) { HAL_I2S_Transmit (&hi2s3, out ,1, 10 );}
  800071c:	4b0e      	ldr	r3, [pc, #56]	; (8000758 <main+0x1ac>)
  800071e:	2200      	movs	r2, #0
  8000720:	601a      	str	r2, [r3, #0]
@@ -737,13 +739,13 @@ int main(void)
  8000738:	6013      	str	r3, [r2, #0]
  800073a:	4b07      	ldr	r3, [pc, #28]	; (8000758 <main+0x1ac>)
  800073c:	681b      	ldr	r3, [r3, #0]
- 800073e:	2b09      	cmp	r3, #9
+ 800073e:	2b00      	cmp	r3, #0
  8000740:	ddf0      	ble.n	8000724 <main+0x178>
 	  if(señal==0)
  8000742:	e7cb      	b.n	80006dc <main+0x130>
- 8000744:	20000154 	.word	0x20000154
- 8000748:	40020c00 	.word	0x40020c00
- 800074c:	20000028 	.word	0x20000028
+ 8000744:	40020c00 	.word	0x40020c00
+ 8000748:	20000028 	.word	0x20000028
+ 800074c:	20000154 	.word	0x20000154
  8000750:	200001a0 	.word	0x200001a0
  8000754:	200001a2 	.word	0x200001a2
  8000758:	2000019c 	.word	0x2000019c
@@ -1060,17 +1062,17 @@ static void MX_TIM2_Init(void)
  8000904:	4b1e      	ldr	r3, [pc, #120]	; (8000980 <MX_TIM2_Init+0x98>)
  8000906:	f04f 4280 	mov.w	r2, #1073741824	; 0x40000000
  800090a:	601a      	str	r2, [r3, #0]
-  htim2.Init.Prescaler = 16000;
+  htim2.Init.Prescaler = 65000;
  800090c:	4b1c      	ldr	r3, [pc, #112]	; (8000980 <MX_TIM2_Init+0x98>)
- 800090e:	f44f 527a 	mov.w	r2, #16000	; 0x3e80
+ 800090e:	f64f 52e8 	movw	r2, #65000	; 0xfde8
  8000912:	605a      	str	r2, [r3, #4]
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
  8000914:	4b1a      	ldr	r3, [pc, #104]	; (8000980 <MX_TIM2_Init+0x98>)
  8000916:	2200      	movs	r2, #0
  8000918:	609a      	str	r2, [r3, #8]
-  htim2.Init.Period = 5000;
+  htim2.Init.Period = 50000;
  800091a:	4b19      	ldr	r3, [pc, #100]	; (8000980 <MX_TIM2_Init+0x98>)
- 800091c:	f241 3288 	movw	r2, #5000	; 0x1388
+ 800091c:	f24c 3250 	movw	r2, #50000	; 0xc350
  8000920:	60da      	str	r2, [r3, #12]
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
  8000922:	4b17      	ldr	r3, [pc, #92]	; (8000980 <MX_TIM2_Init+0x98>)
@@ -1170,17 +1172,17 @@ static void MX_TIM3_Init(void)
  80009a0:	4b1d      	ldr	r3, [pc, #116]	; (8000a18 <MX_TIM3_Init+0x94>)
  80009a2:	4a1e      	ldr	r2, [pc, #120]	; (8000a1c <MX_TIM3_Init+0x98>)
  80009a4:	601a      	str	r2, [r3, #0]
-  htim3.Init.Prescaler = 16000;
+  htim3.Init.Prescaler = 30000;
  80009a6:	4b1c      	ldr	r3, [pc, #112]	; (8000a18 <MX_TIM3_Init+0x94>)
- 80009a8:	f44f 527a 	mov.w	r2, #16000	; 0x3e80
+ 80009a8:	f247 5230 	movw	r2, #30000	; 0x7530
  80009ac:	605a      	str	r2, [r3, #4]
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
  80009ae:	4b1a      	ldr	r3, [pc, #104]	; (8000a18 <MX_TIM3_Init+0x94>)
  80009b0:	2200      	movs	r2, #0
  80009b2:	609a      	str	r2, [r3, #8]
-  htim3.Init.Period = 2000;
+  htim3.Init.Period = 6000;
  80009b4:	4b18      	ldr	r3, [pc, #96]	; (8000a18 <MX_TIM3_Init+0x94>)
- 80009b6:	f44f 62fa 	mov.w	r2, #2000	; 0x7d0
+ 80009b6:	f241 7270 	movw	r2, #6000	; 0x1770
  80009ba:	60da      	str	r2, [r3, #12]
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
  80009bc:	4b16      	ldr	r3, [pc, #88]	; (8000a18 <MX_TIM3_Init+0x94>)
