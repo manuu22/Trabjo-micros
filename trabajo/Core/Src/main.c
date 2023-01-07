@@ -63,7 +63,7 @@ uint8_t Distance  = 0;
 uint32_t tiempo=0;
 char distancia=0;
 uint16_t ADC_val;
-volatile int8_t flag=1;
+volatile int8_t flag=-1;
 volatile int8_t sw=0;
 
 //MICROFONO
@@ -283,7 +283,7 @@ int main(void)
 
 	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)){
 
-		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
 
 
 	   sensor_distancia();
@@ -296,11 +296,21 @@ int main(void)
 
 		 	  if ((alarma == 1)){
 		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
 
 		 	  }
+		 	 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9)){
+				  alarma=0;
+				  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+				  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			  }
+
+
 	  }
 	  else {
-		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+
 
 	  }
 
@@ -585,7 +595,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_14, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PA2 PA5 */
   GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_5;
@@ -600,8 +610,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PD12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  /*Configure GPIO pins : PD12 PD13 PD15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -613,6 +623,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
