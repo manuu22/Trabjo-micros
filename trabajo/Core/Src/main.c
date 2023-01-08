@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "i2c-lcd.h"
+#include "i2c-lcd.h"  //biblioteca para el uso del LCD 1602
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,32 +39,30 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc1; //Handler para el convertidor usado en el LDR
 
-I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c1; // Handler para conectividad I2C para la conectividad con la LCD1602
 
-I2S_HandleTypeDef hi2s2;
+I2S_HandleTypeDef hi2s2; //Handler para conectividad I2S para la incorporacion del microfono
 
-TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim1; //Handler para temporizador para el sensor ultrasonido
+TIM_HandleTypeDef htim3; // Handler para temporizador para el cambio de dia a noche
 
 /* USER CODE BEGIN PV */
-#define TRIG_PIN GPIO_PIN_2
-#define TRIG_PORT GPIOA
-#define ECHO_PIN GPIO_PIN_3
 
 
 
-#define ECHO_PORT GPIOA
+
+
 uint32_t pMillis;
-uint32_t Value1 = 0;
-uint32_t Value2 = 0;
-uint8_t Distance  = 0;
+uint32_t Value1 = 0; //valor de ida
+uint32_t Value2 = 0; // valor de retorno
+uint8_t Distance  = 0;// distancia recorrida
 uint32_t tiempo=0;
 char distancia=0;
-uint16_t ADC_val;
-volatile int8_t flag=-1;
-volatile int8_t sw=0;
+uint16_t ADC_val; //valor para ver la intensidad de luz que recibe la LDR
+volatile int8_t flag=-1; // comienzo de noche, si el flag estuviera a 1 seria dia, este flag cambia cada 2 mins
+volatile int8_t sw=0; // Switch general del programa
 
 //MICROFONO
 int ja =0;
@@ -74,7 +72,7 @@ volatile int alarma;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
+void SystemClock_Config(void);   // funciones para la inicialización de todos los perifericos
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
@@ -87,46 +85,47 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // interrupcion del temp 3
 {
 
 	if(htim->Instance==TIM3){   // cada dos minutos cambia de noche a mañana
 	flag*=-1;
-	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14); // Led del propio micro que indica la hora del dia
 	}
 }
 
 
 void sensor_distancia(){
 				uint16_t dist=0;
-					HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_SET);  // pull the TRIG pin HIGH
+					HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);  // poner el pin de disparo a uno
 		 	      __HAL_TIM_SET_COUNTER(&htim1, 0);
-		 	      while (__HAL_TIM_GET_COUNTER (&htim1) < 10);  // wait for 10 us
-		 	      HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_RESET);  // pull the TRIG pin low
+		 	      while (__HAL_TIM_GET_COUNTER (&htim1) < 10);  // esperar 10 us
+		 	      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);  // poner el pin de disparo a cero
 
-		 	      pMillis = HAL_GetTick(); // used this to avoid infinite while loop  (for timeout)
-		 	      // wait for the echo pin to go high
-		 	      while (!(HAL_GPIO_ReadPin (ECHO_PORT, ECHO_PIN)) && pMillis + 10 >  HAL_GetTick());
+		 	      pMillis = HAL_GetTick(); // esto evita un bucle infinito
+		 	      //esperamos a que el pin de retorno se ponga a uno
+		 	      while (!(HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_3)) && pMillis + 10 >  HAL_GetTick());
 		 	      Value1 = __HAL_TIM_GET_COUNTER (&htim1);
 
-		 	      pMillis = HAL_GetTick(); // used this to avoid infinite while loop (for timeout)
-		 	      // wait for the echo pin to go low
-		 	      while ((HAL_GPIO_ReadPin (ECHO_PORT, ECHO_PIN)) && pMillis + 50 > HAL_GetTick());
+		 	      pMillis = HAL_GetTick(); //esto evita un bucle infinito
+		 	      // esperamos a que el pin de retorno se ponga a cero
+		 	      while ((HAL_GPIO_ReadPin (GPIOA, GPIO_PIN_3)) && pMillis + 50 > HAL_GetTick());
 		 	      Value2 = __HAL_TIM_GET_COUNTER (&htim1);
 
-		 	      Distance = (Value2-Value1)* 0.034/2;
-		 	      distancia=Distance+48;
+		 	      Distance = (Value2-Value1)* 0.034/2;  //Se calcula la distancia segun la diferencia entre los
+		 	      // valores por la velocidad del sonido, todo entre dos.
+		 	      distancia=Distance+48;// para transforma a ASCII para la LCD que solo puede escribir de 0 a 9
 
 		 	      HAL_Delay(50);
 
 		 	     // if(HAL_GetTick()-tiempo>1000){
-		 	    	 if(Distance>=10 &&  Distance<20){
-
-			 	           dist=Distance-10;
+		 	    	 if(Distance>=10 &&  Distance<20){   // como se van a imprimir los datos segun el intervalo
+                                                         //en el que se encuentre
+			 	           dist=Distance-10; //la distancioa menos 10
 			 	           lcd_put_cur(0,0);
-			 	           lcd_send_data(49);
+			 	           lcd_send_data(49); // se imprime un 1
 			 	           lcd_put_cur(0,1);
-			 	           lcd_send_data(dist+48);
+			 	           lcd_send_data(dist+48);// se imprime el segundo digito de 0 a 9
 			 	           HAL_Delay(500);
 			 	           lcd_clear();
 
@@ -134,11 +133,11 @@ void sensor_distancia(){
 		 	    	 }
 		 	    	 if(Distance>=20 &&  Distance<30){
 
-		 	    				 	           dist=Distance-20;
+		 	    				 	           dist=Distance-20; // La distancia menos 20
 		 	    				 	           lcd_put_cur(0,0);
-		 	    				 	           lcd_send_data(50);
-		 	    				 	           lcd_put_cur(0,1);
-		 	    				 	           lcd_send_data(dist+48);
+		 	    				 	           lcd_send_data(50); //ahora en vez de imprimir un 1 como en mayor
+		 	    				 	           lcd_put_cur(0,1); // que veinte se imprimira un 2
+		 	    				 	           lcd_send_data(dist+48); // y el segundo de digito de 0 a 9
 		 	    				 	           HAL_Delay(500);
 		 	    				 	           lcd_clear();
 
@@ -146,7 +145,7 @@ void sensor_distancia(){
 		 	    			 	    	 }
 		 	    	 else{
 
-		 	    		 lcd_send_data(distancia);
+		 	    		 lcd_send_data(distancia); // si esta fuera de los limites imprimirá basura
 		 	    		 lcd_put_cur(0,0);
 		 	    		 //HAL_Delay(1000);
 		 	    		// lcd_clear();
@@ -156,7 +155,7 @@ void sensor_distancia(){
 
 		 	      if (Distance < 10){
 		 	    	 // HAL_GPIO_WritePin (GPIOD,GPIO_PIN_12,1);
-		 	    	  alarma =1;
+		 	    	  alarma =1;  // si la distancia se reduce por debajo de los 10 la alarma saltará
 
 		 	      }
 
@@ -215,12 +214,12 @@ void microfono(){
 }
 
 void ldr(){
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, 100);
-	  ADC_val = HAL_ADC_GetValue(&hadc1);
+	  HAL_ADC_Start(&hadc1); // se inicia el convertidor
+	  HAL_ADC_PollForConversion(&hadc1, 100); // se hace la conversion
+	  ADC_val = HAL_ADC_GetValue(&hadc1); // y se obtiene el valor
 
 
-	  if(ADC_val>300){
+	  if(ADC_val>300){ // si la intensidad sobrepasa los 300 la alarma saltará
 		  alarma =1;
 	  }
 }
@@ -258,14 +257,14 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_TIM1_Init();
-  MX_ADC1_Init();
+  MX_ADC1_Init(); // inicializamos todos los perifericos
   MX_I2S2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start(&htim1);
+  HAL_TIM_Base_Start(&htim1); // inicializamos todos los temporizadores
   HAL_TIM_Base_Start_IT(&htim3);
 
-  HAL_GPIO_WritePin(TRIG_PORT, TRIG_PIN, GPIO_PIN_RESET);  // pull the TRIG pin low
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_RESET);  //ponemos el pin de disparo del sensor de sonido a 0
   lcd_init();
   tiempo=HAL_GetTick();
 
@@ -276,31 +275,30 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)){
+	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_4)){   // si el Sw esta prendido funcionará
 
-		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); // en ese caso se encendera una luz roja en la maqueta
 
 
-	   sensor_distancia();
+	   sensor_distancia(); // se llaman las funciones del sensor de distancia y de sonido
 	   microfono();
 
 		 	  if(flag>0){ // se enciended si es de noche==1
-		 	  ldr();
+		 	  ldr();   // solo funcionará en caso de que la casa se encuentre e una noche virtual
 
 		 	  }
 
-		 	  if ((alarma == 1)){
+		 	  if ((alarma == 1)){  // si salta la alarma se enciende otra luz amarilla en la caja
 		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
 		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+		 		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET); // se le comunica a el otro microcontrolador
 
 		 	  }
-		 	 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9)){
+		 	 if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9)){  //boton que descativara la alarma en caso de saltar por error
 				  alarma=0;
 				  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
 				  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
@@ -309,7 +307,7 @@ int main(void)
 
 	  }
 	  else {
-		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0); // si el sw esta apagadado nada funcionará
 
 
 	  }
