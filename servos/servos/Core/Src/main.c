@@ -44,7 +44,7 @@ I2C_HandleTypeDef hi2c1;
 I2S_HandleTypeDef hi2s3;
 
 TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim3;  //Manejadores de temporizadores
 TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
@@ -55,7 +55,7 @@ TIM_HandleTypeDef htim4;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_TIM4_Init(void);
+static void MX_TIM4_Init(void); //Funciones para inicializar los temporizadores y el I2C
 static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
@@ -66,21 +66,18 @@ static void MX_I2S3_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int i;
-uint8_t b = 0;
+uint8_t b = 0;                   //se inicailizan variables
 volatile int16_t señal=0;
 volatile int16_t señal2=0;
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){//detectamos presencia
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){ //detectamos presencia
 	if (GPIO_Pin==GPIO_PIN_8)
 	{
 		señal=0;
 		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_14,0);
 		HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15,1);
-		__HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-		 HAL_TIM_Base_Start_IT(&htim2);
-
-
-
+		__HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE); //dio fallos la interrucpcion del TEMP2 por lo que se limpia
+		 HAL_TIM_Base_Start_IT(&htim2);// se inicializa la interrupcion del TEMP2
 	}
 
 }
@@ -92,20 +89,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)//acaba el temporizad
   /* NOTE : This function Should not be modified, when the callback is needed,
             the __HAL_TIM_PeriodElapsedCallback could be implemented in the user file
    */
-  if(htim->Instance==TIM2)
+  if(htim->Instance==TIM2)//Interrupcion del temporizador 2
   {
 	  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_14,1);
 	 	HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15,0);
 	 	HAL_TIM_Base_Stop_IT(&htim2);
-	 	 HAL_TIM_Base_Start_IT(&htim3);
+	 	 HAL_TIM_Base_Start_IT(&htim3);// se inicializa la interrupcion del TEMP3
 	 	señal=1;
-	 	HAL_TIM_Base_Stop(&htim2);
+	 	HAL_TIM_Base_Stop(&htim2);// se detiene la interrupcion del TEMP2
 
   }
-  if(htim->Instance==TIM3)
+  if(htim->Instance==TIM3)//Interrupcion del temporizador 3
     {
 	  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15,1);
-  	 	HAL_TIM_Base_Stop_IT(&htim3);
+  	 	HAL_TIM_Base_Stop_IT(&htim3);// se detiene la interrupcion del TEMP3
   	 	señal=0;
 
     }
@@ -145,7 +142,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
-  MX_TIM3_Init();
+  MX_TIM3_Init();   //Se inicializan los temporizadores y el I2C
   MX_I2C1_Init();
   MX_I2S3_Init();
   /* USER CODE BEGIN 2 */
@@ -204,7 +201,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)==1)
+	  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)==1)//nos llega la señal de detener alarma
 	  {
 		  HAL_TIM_Base_Stop_IT(&htim2);
 	  }
@@ -213,7 +210,7 @@ int main(void)
 	  	 {
 		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1, 2000);//podemos mover la ventana como queramos con la mano
 	  	 }
-	  else if(señal==1)
+	  else if(señal==1)//se acaba el tiempo de la alarma
 	  	  {
 
 			  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);//tiempo para cerrar la ventana
